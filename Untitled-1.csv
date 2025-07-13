@@ -1,0 +1,21 @@
+	***This is a REP LOAD based on usernames in the file. It won't touch usernames that are not in the file.																										
+							Source File Mappings															Change History					
+	Required Field	Name	Type	Nullable?	Default Value	Col #	Mapped?	FileName or Source	Field Name	Field Type	Field Definition	SourceField Detail Reference	Comment	Note	Sample Data	Definition				NB No.	NB Misc Notes	Version Name	Date	Change Comments			
+	Required	ACCOUNTID	NUMBER(10,0)	No		2	Y	USERACCT_INTERNAL_MMDDYYYYHHmmSS, USERACCT_EXTERNAL_MMDDYYYYHHmmSS	accountshortname							ID of the Account within the _Accounts tenant				1		users	07/01/2019	Initial Mapping			
+	Required	USERNAME	VARCHAR2(100 BYTE)	Project Required		16	Y	USERACCT_INTERNAL_MMDDYYYYHHmmSS, USERACCT_EXTERNAL_MMDDYYYYHHmmSS	username					Uesd xpid for int. 		Username				2		users	07/01/2019	Initial Mapping			
+	Required	TENANTID	NUMBER(10,0)	No		15	Y	-	"Map TenantId of NeubergerBerman_Employee for records in USERACCT_INTERNAL file
+Map TenantId of NeubergerBerman_Users for records in USERACCT_EXTERNAL file"					Hard code to blank		ID of the tenant for which the ACCOUNTID exists within				3		users	07/01/2019	3/14 - RP advised IC has this mapped correct (mismatch was due to add'l text in doc). 			
+	Generated	BE_APPVERSION	VARCHAR2(20 BYTE)	Yes		3	N									InvestCloud Use Only: Do Not Map											
+	Generated	BE_CREATIME	TIMESTAMP(6)	Yes		4	N									InvestCloud Use Only: Do Not Map											
+	Generated	BE_PROGNAME	VARCHAR2(100 BYTE)	Yes		5	N									InvestCloud Use Only: Do Not Map											
+	Generated	BE_SOURCE	VARCHAR2(50 BYTE)	Yes		6	N									InvestCloud Use Only: Do Not Map											
+	Generated	BE_UPDTTIME	TIMESTAMP(6)	Yes		7	N									InvestCloud Use Only: Do Not Map											
+	Generated	BE_USERNAME	VARCHAR2(50 BYTE)	Yes		8	N									InvestCloud Use Only: Do Not Map											
+	Generated	BE_VERNO	NUMBER(10,0)	No		9	N									InvestCloud Use Only: Do Not Map											
+	Generated	ID	NUMBER(10,0)	No		1	N									InvestCloud Use Only: Do Not Map											
+	Generated	STGLOADID	NUMBER(10,0)	No		17	N									InvestCloud Use Only: Do Not Map											
+	Generated	STGMESSAGE	VARCHAR2(255 BYTE)	Yes		13	N									InvestCloud Use Only: Do Not Map											
+	Generated	STGRECORDACTION	VARCHAR2(1 BYTE)	Yes		10	N									InvestCloud Use Only: Do Not Map											
+	Generated	STGRECORDSETID	VARCHAR2(50 BYTE)	Yes		11	N									InvestCloud Use Only: Do Not Map											
+	Generated	STGSEQUENCEINSTREAM	NUMBER(10,0)	Yes		12	N									InvestCloud Use Only: Do Not Map											
+	Generated	STGSTATUS	VARCHAR2(1 BYTE)	Yes		14	N									InvestCloud Use Only: Do Not Map											

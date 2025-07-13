@@ -44,14 +44,6 @@ ENV/
 *.h5
 *.model
 
-# Data Files (敏感数据)
-*.csv
-*.xlsx
-*.xls
-*.xlsm
-*.db
-*.sqlite
-*.sql
 
 # Logs
 *.log
