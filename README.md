@@ -89,24 +89,60 @@ pip install -r requirements.txt
 
 ## 使用方法
 
-### 1. 数据预处理和特征工程
+### 数据源配置
+
+项目支持两种数据源：
+
+#### 🔷 方式1: Oracle数据库（推荐用于生产环境）
+1. **安装Oracle Instant Client**
+   - 下载并解压Oracle Instant Client到 `C:\oracle\instantclient_21_18`
+   - 或修改 `src/oracle_data_extractor.py` 中的路径配置
+
+2. **配置数据库连接**
+   ```python
+   # 在 oracle_data_extractor.py 中配置
+   username = "BGRO_citangk"
+   password = "Cici0511"
+   dsn = "UAT7ora:1521/ORAUAT7PRIV"
+   ```
+
+3. **运行数据提取**
+   ```bash
+   cd src
+   python oracle_data_extractor.py
+   ```
+
+#### 🔷 方式2: 样本CSV文件（用于测试和开发）
+使用项目根目录下的样本数据文件进行测试。
+
+### 核心流程
+
+#### 1. 数据预处理和特征工程
 ```bash
-python src/tier1_feature_engineering.py
+cd src
+# 交互式选择数据源
+python run_feature_engineering.py
+
+# 或直接指定数据源
+python tier1_feature_engineering.py  # 使用样本数据
 ```
 
-### 2. 探索性数据分析
+#### 2. 探索性数据分析
 ```bash
-python src/user_level_eda.py
+cd src
+python user_level_eda.py
 ```
 
-### 3. 模型训练
+#### 3. 模型训练
 ```bash
-python src/baseline_model_development.py
+cd src
+python baseline_model_development.py
 ```
 
-### 4. 数据架构验证
+#### 4. 数据架构验证
 ```bash
-python src/data_architecture_validation.py
+cd src
+python data_architecture_validation.py
 ```
 
 ## 核心功能

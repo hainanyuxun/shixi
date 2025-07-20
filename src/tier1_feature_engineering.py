@@ -32,20 +32,79 @@ class Tier1FeatureEngineering:
         self.feature_df = None
         self.current_date = datetime.now()
         
-    def load_data(self):
-        """Load sample data"""
+    def load_data(self, use_oracle=False):
+        """
+        Load data from Oracle database or sample CSV files
+        
+        Args:
+            use_oracle (bool): Whether to use Oracle database (True) or sample CSV files (False)
+        """
         try:
-            logging.info("Loading sample data...")
-            
-            # Load three core data tables
-            self.accounts_df = pd.read_csv('Account_sampledata.csv')
-            self.transactions_df = pd.read_csv('Transaction_sampledata.csv')
-            self.pnl_df = pd.read_csv('PNL_sampledata.csv')
+            if use_oracle:
+                logging.info("Loading data from Oracle database...")
+                from oracle_data_extractor import OracleDataExtractor
+                
+                # 创建Oracle数据提取器
+                extractor = OracleDataExtractor()
+                
+                # 初始化Oracle客户端
+                if not extractor.initialize_oracle_client():
+                    logging.error("Oracle客户端初始化失败，回退到样本数据")
+                    return self._load_sample_data()
+                
+                # 连接数据库
+                if not extractor.connect_database():
+                    logging.error("数据库连接失败，回退到样本数据")
+                    return self._load_sample_data()
+                
+                try:
+                    # 提取数据
+                    results = extractor.extract_all_data()
+                    
+                    # 映射到类属性
+                    self.accounts_df = results.get('account')
+                    self.transactions_df = results.get('transaction')
+                    self.pnl_df = results.get('pnl')
+                    self.users_df = results.get('user')
+                    
+                    # 检查数据是否成功加载
+                    if any(df is None for df in [self.accounts_df, self.transactions_df, self.pnl_df]):
+                        logging.warning("部分数据表提取失败，回退到样本数据")
+                        return self._load_sample_data()
+                    
+                    logging.info("Oracle数据加载成功")
+                    
+                finally:
+                    extractor.disconnect_database()
+            else:
+                return self._load_sample_data()
             
             # Data preprocessing
             self._preprocess_data()
             
             logging.info(f"Data loading completed - Accounts:{len(self.accounts_df)}, Transactions:{len(self.transactions_df)}, PNL:{len(self.pnl_df)}")
+            return True
+            
+        except Exception as e:
+            logging.error(f"数据加载失败: {e}")
+            logging.info("回退到样本数据")
+            return self._load_sample_data()
+    
+    def _load_sample_data(self):
+        """Load sample CSV data"""
+        try:
+            logging.info("Loading sample CSV data...")
+            
+            # Load three core data tables
+            self.accounts_df = pd.read_csv('../Account_sampledata.csv')
+            self.transactions_df = pd.read_csv('../Transaction_sampledata.csv')
+            self.pnl_df = pd.read_csv('../PNL_sampledata.csv')
+            self.users_df = None  # 样本数据中可能没有用户表
+            
+            # Data preprocessing
+            self._preprocess_data()
+            
+            logging.info(f"Sample data loading completed - Accounts:{len(self.accounts_df)}, Transactions:{len(self.transactions_df)}, PNL:{len(self.pnl_df)}")
             return True
             
         except Exception as e:
@@ -474,16 +533,26 @@ class Tier1FeatureEngineering:
         logging.info(f"Features saved to {filename}")
         print(f"💾 Features saved to {filename}")
 
-def main():
-    """Main function"""
+def main(use_oracle=False):
+    """
+    Main function for testing feature engineering
+    
+    Args:
+        use_oracle (bool): Whether to use Oracle database (True) or sample CSV files (False)
+    """
     print("🔧 InvestCloud Customer Churn Prediction - Tier-1 Feature Engineering")
     print("=" * 75)
+    
+    if use_oracle:
+        print("📊 Using Oracle database data source")
+    else:
+        print("📊 Using sample CSV data source")
     
     # Initialize feature engineering
     feature_eng = Tier1FeatureEngineering()
     
     # Load data
-    if not feature_eng.load_data():
+    if not feature_eng.load_data(use_oracle=use_oracle):
         print("❌ Data loading failed, program exiting")
         return
     
