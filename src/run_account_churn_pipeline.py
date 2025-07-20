@@ -63,37 +63,21 @@ def validate_oracle_environment():
     return True
 
 def get_data_source_choice():
-    """Get user choice for data source."""
-    print("\n📊 Data Source Selection:")
-    print("1. Oracle Database (UAT environment - real data)")
-    print("2. Sample Data (for testing and development)")
+    """Validate Oracle environment for data source."""
+    print("\n📊 Data Source: Oracle Database (UAT environment)")
     
-    while True:
-        try:
-            choice = input("\nSelect data source (1-2): ").strip()
-            if choice == '1':
-                if validate_oracle_environment():
-                    return True
-                else:
-                    print("\n⚠️ Oracle environment validation failed. Using sample data instead.")
-                    return False
-            elif choice == '2':
-                return False
-            else:
-                print("❌ Invalid choice. Please enter 1 or 2.")
-        except KeyboardInterrupt:
-            print("\n\n👋 Operation cancelled by user")
-            sys.exit(0)
+    if validate_oracle_environment():
+        print("✅ Oracle environment validated successfully")
+        return True
+    else:
+        print("❌ Oracle environment validation failed. Please fix configuration.")
+        return False
 
-def run_data_extraction(use_oracle=False):
+def run_data_extraction():
     """Run data extraction process."""
     print("\n" + "="*60)
     print("🗄️ STEP 1: DATA EXTRACTION")
     print("="*60)
-    
-    if not use_oracle:
-        print("📝 Using sample data - no extraction needed")
-        return True
     
     try:
         from account_level_data_extractor import AccountLevelDataExtractor
@@ -132,7 +116,7 @@ def run_data_extraction(use_oracle=False):
         print(f"❌ Data extraction failed: {e}")
         return False
 
-def run_exploratory_data_analysis(use_oracle=False):
+def run_exploratory_data_analysis():
     """Run exploratory data analysis."""
     print("\n" + "="*60)
     print("📊 STEP 2: EXPLORATORY DATA ANALYSIS")
@@ -145,7 +129,7 @@ def run_exploratory_data_analysis(use_oracle=False):
         eda = AccountLevelEDA()
         
         # Load data
-        if not eda.load_data(use_oracle=use_oracle):
+        if not eda.load_data():
             print("❌ EDA data loading failed")
             return False
         
@@ -159,7 +143,7 @@ def run_exploratory_data_analysis(use_oracle=False):
         print(f"❌ EDA failed: {e}")
         return False
 
-def run_feature_engineering(use_oracle=False):
+def run_feature_engineering():
     """Run feature engineering process."""
     print("\n" + "="*60)
     print("🔧 STEP 3: FEATURE ENGINEERING")
@@ -172,7 +156,7 @@ def run_feature_engineering(use_oracle=False):
         feature_eng = AccountLevelFeatureEngineering()
         
         # Load data
-        if not feature_eng.load_data(use_oracle=use_oracle):
+        if not feature_eng.load_data():
             print("❌ Feature engineering data loading failed")
             return False
         
@@ -229,7 +213,7 @@ def run_model_development():
         print(f"❌ Model development failed: {e}")
         return False
 
-def run_complete_pipeline(use_oracle=False):
+def run_complete_pipeline():
     """Run the complete churn prediction pipeline."""
     print("\n🚀 Starting Complete Account-Level Churn Prediction Pipeline")
     print("=" * 75)
@@ -239,7 +223,7 @@ def run_complete_pipeline(use_oracle=False):
     total_steps = 4
     
     # Step 1: Data Extraction
-    if run_data_extraction(use_oracle):
+    if run_data_extraction():
         steps_completed += 1
         print(f"📈 Pipeline Progress: {steps_completed}/{total_steps} steps completed")
     else:
@@ -247,7 +231,7 @@ def run_complete_pipeline(use_oracle=False):
         return False
     
     # Step 2: Exploratory Data Analysis
-    if run_exploratory_data_analysis(use_oracle):
+    if run_exploratory_data_analysis():
         steps_completed += 1
         print(f"📈 Pipeline Progress: {steps_completed}/{total_steps} steps completed")
     else:
@@ -255,7 +239,7 @@ def run_complete_pipeline(use_oracle=False):
         return False
     
     # Step 3: Feature Engineering
-    if run_feature_engineering(use_oracle):
+    if run_feature_engineering():
         steps_completed += 1
         print(f"📈 Pipeline Progress: {steps_completed}/{total_steps} steps completed")
     else:
@@ -300,21 +284,21 @@ def main():
     """Main pipeline execution function."""
     print_banner()
     
-    use_oracle = None
-    
     while True:
         print_menu()
         
         try:
             choice = input("Select pipeline option (1-6): ").strip()
             
-            # Get data source for pipeline options that need it
-            if choice in ['1', '2', '3', '4'] and use_oracle is None:
-                use_oracle = get_data_source_choice()
+            # Validate Oracle environment for data operations
+            if choice in ['1', '2', '3', '4']:
+                if not get_data_source_choice():
+                    print("❌ Oracle environment validation failed. Please fix configuration and try again.")
+                    continue
             
             if choice == '1':
                 print("\n🔥 Starting Complete Pipeline...")
-                success = run_complete_pipeline(use_oracle)
+                success = run_complete_pipeline()
                 if success:
                     print("\n🎊 Complete pipeline executed successfully!")
                     break
@@ -323,7 +307,7 @@ def main():
                     
             elif choice == '2':
                 print("\n📦 Running Data Extraction Only...")
-                success = run_data_extraction(use_oracle)
+                success = run_data_extraction()
                 if success:
                     print("\n✅ Data extraction completed!")
                 else:
@@ -331,7 +315,7 @@ def main():
                     
             elif choice == '3':
                 print("\n📊 Running EDA Only...")
-                success = run_exploratory_data_analysis(use_oracle)
+                success = run_exploratory_data_analysis()
                 if success:
                     print("\n✅ EDA completed!")
                 else:
@@ -339,7 +323,7 @@ def main():
                     
             elif choice == '4':
                 print("\n🔧 Running Feature Engineering Only...")
-                success = run_feature_engineering(use_oracle)
+                success = run_feature_engineering()
                 if success:
                     print("\n✅ Feature engineering completed!")
                 else:

@@ -80,11 +80,11 @@ class AccountChurnModelDevelopment:
                         feature_files.sort(reverse=True)  # Get latest
                         file_path = os.path.join(data_dir, feature_files[0])
                     else:
-                        logging.warning("No feature files found, generating sample data")
-                        return self._create_sample_feature_data()
+                        logging.error("No feature files found. Please run feature engineering first.")
+                        return False
                 else:
-                    logging.warning("Data directory not found, generating sample data")
-                    return self._create_sample_feature_data()
+                    logging.error("Data directory not found. Please run feature engineering first.")
+                    return False
             
             logging.info(f"Loading feature data from: {file_path}")
             self.feature_df = pd.read_csv(file_path)
@@ -100,54 +100,6 @@ class AccountChurnModelDevelopment:
             
         except Exception as e:
             logging.error(f"Failed to load feature data: {e}")
-            logging.info("Generating sample data for testing")
-            return self._create_sample_feature_data()
-    
-    def _create_sample_feature_data(self):
-        """Create sample feature data for testing."""
-        try:
-            logging.info("Creating sample feature data...")
-            np.random.seed(42)
-            n_accounts = 2000
-            
-            # Create sample features
-            data = {
-                'ACCOUNTID': range(1, n_accounts + 1),
-                'ACCOUNTSHORTNAME': [f'ACC{i:06d}' for i in range(1, n_accounts + 1)],
-                'account_age_days': np.random.randint(30, 2000, n_accounts),
-                'account_age_years': np.random.uniform(0.1, 5.5, n_accounts),
-                'is_closed': np.random.choice([0, 1], n_accounts, p=[0.85, 0.15]),
-                'account_type_encoded': np.random.randint(0, 4, n_accounts),
-                'is_us_account': np.random.choice([0, 1], n_accounts, p=[0.7, 0.3]),
-                'is_usd_account': np.random.choice([0, 1], n_accounts, p=[0.8, 0.2]),
-                'log_capital_commitment': np.random.lognormal(8, 2, n_accounts),
-                'current_market_value': np.random.lognormal(10, 2, n_accounts),
-                'avg_market_value_365d': np.random.lognormal(10, 2, n_accounts),
-                'market_value_trend_180d': np.random.normal(0, 1000, n_accounts),
-                'portfolio_volatility_score': np.random.uniform(0, 1, n_accounts),
-                'num_asset_classes': np.random.randint(1, 6, n_accounts),
-                'total_transactions': np.random.poisson(50, n_accounts),
-                'transaction_frequency_90d': np.random.uniform(0, 2, n_accounts),
-                'days_since_last_transaction': np.random.randint(0, 365, n_accounts),
-                'composite_churn_risk': np.random.uniform(0, 1, n_accounts)
-            }
-            
-            # Create target variable with some logic
-            churn_prob = (
-                0.1 + 
-                0.3 * (data['days_since_last_transaction'] > 180) +
-                0.2 * (data['market_value_trend_180d'] < -500) +
-                0.2 * (data['transaction_frequency_90d'] < 0.1) +
-                0.2 * data['composite_churn_risk']
-            )
-            data['CHURN_FLAG'] = np.random.binomial(1, np.clip(churn_prob, 0, 0.4), n_accounts)
-            
-            self.feature_df = pd.DataFrame(data)
-            logging.info(f"Sample feature data created: {self.feature_df.shape}")
-            return True
-            
-        except Exception as e:
-            logging.error(f"Failed to create sample data: {e}")
             return False
     
     def prepare_model_data(self):

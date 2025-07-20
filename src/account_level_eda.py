@@ -44,159 +44,54 @@ class AccountLevelEDA:
         self.transaction_df = None
         self.current_date = datetime.now()
         
-    def load_data(self, use_oracle=False):
+    def load_data(self):
         """
-        Load data from Oracle database or sample CSV files.
-        
-        Args:
-            use_oracle (bool): Whether to use Oracle database (True) or sample CSV files (False)
+        Load data from Oracle database.
         """
         try:
-            if use_oracle:
-                logging.info("Loading data from Oracle database...")
-                from account_level_data_extractor import AccountLevelDataExtractor
+            logging.info("Loading data from Oracle database...")
+            from account_level_data_extractor import AccountLevelDataExtractor
+            
+            # Create Oracle data extractor
+            extractor = AccountLevelDataExtractor()
+            
+            # Initialize Oracle client
+            if not extractor.initialize_oracle_client():
+                logging.error("Oracle client initialization failed")
+                return False
+            
+            # Connect to database
+            if not extractor.connect_database():
+                logging.error("Database connection failed")
+                return False
+            
+            try:
+                # Extract data
+                results = extractor.extract_all_account_data()
                 
-                # Create Oracle data extractor
-                extractor = AccountLevelDataExtractor()
+                # Map to class attributes
+                self.account_df = results.get('account')
+                self.performance_df = results.get('performance')
+                self.transaction_df = results.get('transaction')
                 
-                # Initialize Oracle client
-                if not extractor.initialize_oracle_client():
-                    logging.error("Oracle client initialization failed, falling back to sample data")
-                    return self._load_sample_data()
+                # Check if data was successfully loaded
+                if any(df is None for df in [self.account_df, self.performance_df, self.transaction_df]):
+                    logging.error("Some data tables failed to extract")
+                    return False
                 
-                # Connect to database
-                if not extractor.connect_database():
-                    logging.error("Database connection failed, falling back to sample data")
-                    return self._load_sample_data()
+                logging.info("Oracle data loading successful")
                 
-                try:
-                    # Extract data
-                    results = extractor.extract_all_account_data()
-                    
-                    # Map to class attributes
-                    self.account_df = results.get('account')
-                    self.performance_df = results.get('performance')
-                    self.transaction_df = results.get('transaction')
-                    
-                    # Check if data was successfully loaded
-                    if any(df is None for df in [self.account_df, self.performance_df, self.transaction_df]):
-                        logging.warning("Some data tables failed to extract, falling back to sample data")
-                        return self._load_sample_data()
-                    
-                    logging.info("Oracle data loading successful")
-                    
-                finally:
-                    extractor.disconnect_database()
-            else:
-                return self._load_sample_data()
+            finally:
+                extractor.disconnect_database()
             
             logging.info(f"Data loading completed - Accounts:{len(self.account_df)}, Performance:{len(self.performance_df)}, Transactions:{len(self.transaction_df)}")
             return True
             
         except Exception as e:
             logging.error(f"Data loading failed: {e}")
-            logging.info("Falling back to sample data")
-            return self._load_sample_data()
-    
-    def _load_sample_data(self):
-        """Load sample data for EDA testing."""
-        try:
-            logging.info("Creating sample data for EDA...")
-            
-            # Create sample datasets
-            self.account_df = self._create_sample_account_data()
-            self.performance_df = self._create_sample_performance_data()
-            self.transaction_df = self._create_sample_transaction_data()
-            
-            logging.info("Sample data created successfully")
-            return True
-            
-        except Exception as e:
-            logging.error(f"Sample data creation failed: {e}")
             return False
     
-    def _create_sample_account_data(self):
-        """Create sample account data for EDA."""
-        np.random.seed(42)
-        n_accounts = 2000
-        
-        # Create account open dates
-        open_dates = pd.date_range('2018-01-01', '2023-12-31', periods=n_accounts)
-        
-        data = {
-            'ACCOUNTID': range(1, n_accounts + 1),
-            'ACCOUNTSHORTNAME': [f'ACC{i:06d}' for i in range(1, n_accounts + 1)],
-            'CLIENTID': np.random.randint(1, 800, n_accounts),
-            'ACCOUNTTYPE': np.random.choice(['Individual', 'Joint', 'Trust', 'Corporate', 'IRA'], 
-                                          n_accounts, p=[0.4, 0.25, 0.15, 0.1, 0.1]),
-            'CLASSIFICATION1': np.random.choice(['INDIVIDUAL', 'JOINT', 'TRUST', 'CORPORATE'], n_accounts),
-            'ACCOUNTOPENDATE': open_dates,
-            'ACCOUNTCLOSEDATE': [None] * n_accounts,
-            'DOMICILECOUNTRY': np.random.choice(['US', 'CA', 'UK', 'DE', 'FR'], 
-                                              n_accounts, p=[0.7, 0.1, 0.1, 0.05, 0.05]),
-            'DOMICILESTATE': np.random.choice(['NY', 'CA', 'FL', 'TX', 'IL', None], 
-                                            n_accounts, p=[0.2, 0.15, 0.1, 0.1, 0.05, 0.4]),
-            'BOOKCCY': np.random.choice(['USD', 'EUR', 'GBP', 'CAD'], 
-                                      n_accounts, p=[0.8, 0.1, 0.05, 0.05]),
-            'CAPITALCOMMITMENTAMOUNT': np.random.lognormal(12, 1.5, n_accounts),
-            'ACCOUNTOBJECTIVE': np.random.choice(['Growth', 'Income', 'Balanced', 'Conservative', 'Aggressive'], n_accounts),
-            'CHURN_FLAG': np.random.choice([0, 1], n_accounts, p=[0.82, 0.18])
-        }
-        
-        # Simulate churned accounts with close dates
-        churn_mask = data['CHURN_FLAG'] == 1
-        churn_indices = np.where(churn_mask)[0]
-        for idx in churn_indices:
-            # Close date between 30 days and 2 years after open
-            days_to_close = np.random.randint(30, 730)
-            close_date = data['ACCOUNTOPENDATE'][idx] + timedelta(days=days_to_close)
-            if close_date <= datetime.now():
-                data['ACCOUNTCLOSEDATE'][idx] = close_date
-        
-        return pd.DataFrame(data)
-    
-    def _create_sample_performance_data(self):
-        """Create sample performance data for EDA."""
-        np.random.seed(42)
-        n_records = 100000
-        
-        accounts = [f'ACC{i:06d}' for i in range(1, 2001)]
-        dates = pd.date_range('2022-01-01', '2024-01-01', freq='W')  # Weekly data
-        
-        data = {
-            'ACCOUNTSHORTNAME': np.random.choice(accounts, n_records),
-            'BE_ASOF': np.random.choice(dates, n_records),
-            'ASSETCLASSLEVEL1': np.random.choice(['Equity', 'Fixed Income', 'Alternatives', 'Cash', 'Real Estate'], 
-                                              n_records, p=[0.4, 0.25, 0.2, 0.1, 0.05]),
-            'ASSETCLASSLEVEL2': np.random.choice(['US Equity', 'International Equity', 'Government Bonds', 
-                                                'Corporate Bonds', 'Hedge Funds', 'Private Equity'], n_records),
-            'BOOKMARKETVALUEPERIODEND': np.random.lognormal(10, 2, n_records),
-            'BOOKUGL': np.random.normal(0, 5000, n_records),
-            'QUANTITY': np.random.lognormal(5, 1.5, n_records),
-            'ORIGINALCOST': np.random.lognormal(10, 2, n_records)
-        }
-        
-        return pd.DataFrame(data)
-    
-    def _create_sample_transaction_data(self):
-        """Create sample transaction data for EDA."""
-        np.random.seed(42)
-        n_records = 50000
-        
-        accounts = [f'ACC{i:06d}' for i in range(1, 2001)]
-        dates = pd.date_range('2022-01-01', '2024-01-01', freq='D')
-        
-        data = {
-            'ACCOUNTSHORTNAME': np.random.choice(accounts, n_records),
-            'TRANSACTIONDATE': np.random.choice(dates, n_records),
-            'EVENTTYPE': np.random.choice(['BUY', 'SELL', 'DIVIDEND', 'DEPOSIT', 'WITHDRAWAL', 'FEE'], 
-                                        n_records, p=[0.25, 0.25, 0.15, 0.15, 0.15, 0.05]),
-            'BOOKAMOUNT': np.random.normal(0, 50000, n_records),
-            'QUANTITY': np.random.lognormal(3, 1, n_records),
-            'BOOKCCY': np.random.choice(['USD', 'EUR', 'GBP'], n_records, p=[0.8, 0.15, 0.05])
-        }
-        
-        return pd.DataFrame(data)
+
     
     def analyze_account_demographics(self):
         """Analyze account demographic characteristics and churn patterns."""
@@ -624,26 +519,19 @@ class AccountLevelEDA:
         
         logging.info("Complete EDA analysis finished")
 
-def main(use_oracle=False):
+def main():
     """
     Main function for account-level EDA.
-    
-    Args:
-        use_oracle (bool): Whether to use Oracle database (True) or sample data (False)
     """
     print("📊 InvestCloud Customer Churn Prediction - Account-Level EDA")
     print("=" * 75)
-    
-    if use_oracle:
-        print("📊 Using Oracle database data source")
-    else:
-        print("📊 Using sample data source")
+    print("📊 Using Oracle database data source")
     
     # Initialize EDA
     eda = AccountLevelEDA()
     
     # Load data
-    if not eda.load_data(use_oracle=use_oracle):
+    if not eda.load_data():
         print("❌ Data loading failed, program exiting")
         return
     
