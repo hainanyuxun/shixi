@@ -1,80 +1,95 @@
-# 客户流失预测项目 (Customer Churn Prediction)
+# Customer Churn Prediction Project - Account Level Analysis
 
-## 项目概述
+## Project Overview
 
-这是一个基于InvestCloud平台的客户流失预测项目，通过分析用户行为、交易模式、资产价值变化等多维度数据，预测客户流失风险。
+This is an **account-level churn prediction project** for InvestCloud platform, focusing on predicting account closure risk through comprehensive analysis of account lifecycle, portfolio performance, and transaction behaviors. The project uses Oracle UAT database integration and provides production-ready machine learning models.
 
-## 核心特性
+## Core Features
 
-### 🎯 预测目标
-- **用户级别预测**: 基于USERS.STATUS字段的用户流失预测
-- **账户级别预测**: 基于账户关闭日期的辅助预测
-- **多层次风险评估**: 综合用户行为和投资表现的风险评分
+### 🎯 Prediction Target
+- **Account-Level Churn Prediction**: Primary focus on account closure prediction
+- **Account Lifecycle Analysis**: Based on ACCOUNTCLOSEDATE and account status
+- **Risk Scoring Framework**: Comprehensive risk assessment for account retention
 
-### 📊 数据源
-- **USERS表**: 用户基础信息和状态
-- **beamaccount表**: 账户信息和生命周期
-- **IDRTRANSACTION表**: 交易行为数据
-- **PROFITANDLOSSLITE表**: 资产价值和损益数据
+### 📊 Data Sources
+- **BEAMACCOUNT**: Account master data, lifecycle, and demographics
+- **PROFITANDLOSSLITE**: Portfolio performance and market values
+- **IDRTRANSACTION**: Transaction behavior and activity patterns
+- **Oracle UAT Database**: Real-time data integration
 
-### 🔧 技术栈
-- **Python 3.8+**: 主要开发语言
-- **Pandas**: 数据处理和分析
-- **Scikit-learn**: 机器学习建模
-- **XGBoost/LightGBM**: 高级梯度提升算法
-- **Matplotlib/Seaborn**: 数据可视化
-- **Oracle Database**: 数据存储
+### 🔧 Technology Stack
+- **Python 3.8+**: Primary development language
+- **Oracle Database**: UAT environment data source
+- **Scikit-learn**: Machine learning framework
+- **Pandas/NumPy**: Data processing and analysis
+- **Matplotlib/Seaborn**: Data visualization
+- **oracledb**: Oracle database connectivity
 
-## 项目结构
+## Project Structure
 
 ```
 customer_churn_prediction/
-├── README.md                           # 项目说明文档
-├── requirements.txt                    # Python依赖包
-├── .gitignore                         # Git忽略文件配置
+├── README.md                                    # Project documentation
+├── requirements.txt                             # Python dependencies
+├── setup_oracle.py                            # Oracle environment setup
+├── .gitignore                                  # Git ignore configuration
 │
-├── docs/                              # 项目文档
-│   ├── Customer_Churn_Prediction_Tables_Analysis.md
-│   ├── Feature_Analysis_Oracle_Database.md
-│   ├── Oracle_Database_Analysis.md
-│   └── SQL_Data_Export_Guide.md
+├── docs/                                       # Project documentation
+│   ├── Customer_Churn_Prediction_Project_Guide.md
+│   ├── beamaccount_table_fields_reference.md
+│   ├── profitandlosslite_table_fields_reference.md
+│   ├── IDRTRANSACTION_table_fields_reference.md
+│   └── Oracle_Database_Analysis.md
 │
-├── src/                               # 源代码目录
-│   ├── baseline_model_development.py  # 基线模型开发
-│   ├── tier1_feature_engineering.py   # 特征工程
-│   ├── user_level_eda.py             # 用户级别探索性分析
-│   ├── data_architecture_validation.py # 数据架构验证
-│   └── Churn_model_sample.py         # 模型示例
+├── src/                                        # Source code directory
+│   ├── account_level_data_extractor.py        # Oracle data extraction
+│   ├── account_level_feature_engineering.py   # Account feature engineering
+│   ├── account_churn_model_development.py     # Model training & evaluation
+│   ├── account_level_eda.py                   # Exploratory data analysis
+│   ├── run_account_churn_pipeline.py          # Unified pipeline runner
+│   └── [legacy files...]                      # Previous development files
 │
-├── models/                           # 训练好的模型
-│   ├── best_model_logistic_regression.joblib
-│   └── feature_scaler.joblib
+├── models/                                     # Trained models
+│   ├── best_account_churn_model_*.joblib
+│   └── account_feature_scaler_*.joblib
 │
-├── data/                            # 数据目录 (不包含在版本控制中)
-│   └── processed/
-│       └── tier1_features.csv
+├── data/                                       # Data directory (excluded from VCS)
+│   ├── raw/                                   # Raw extracted data
+│   ├── processed/                             # Processed feature data
+│   └── reports/                               # Analysis reports
 │
-└── outputs/                         # 输出结果
-    ├── account_status_distribution.png
-    ├── baseline_model_performance.png
-    ├── transaction_patterns.png
-    └── user_value_segmentation.png
+└── outputs/                                   # Analysis outputs
+    ├── account_demographics_analysis_*.png
+    ├── account_lifecycle_analysis_*.png
+    ├── portfolio_performance_analysis_*.png
+    └── account_model_performance_*.png
 ```
 
-## 快速开始
+## Quick Start
 
-### 🚀 方式1: 自动环境配置（推荐）
+### 🚀 Method 1: Complete Account-Level Pipeline (Recommended)
 ```bash
-# 1. 克隆项目
+# 1. Clone the project
 git clone https://github.com/your-username/customer_churn_prediction.git
 cd customer_churn_prediction
 
-# 2. 运行自动安装脚本
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Run the complete account-level churn prediction pipeline
+cd src
+python run_account_churn_pipeline.py
+```
+
+### 🛠️ Method 2: Oracle Environment Auto-Setup
+```bash
+# 1. Run Oracle environment setup (if using real data)
 python setup_oracle.py
 
-# 3. 根据提示配置Oracle环境，然后运行
+# 2. Follow prompts to configure Oracle connection
+# 3. Run the pipeline with Oracle data
 cd src
-python run_feature_engineering.py
+python run_account_churn_pipeline.py
 ```
 
 ### 🛠️ 方式2: 手动安装配置
