@@ -61,15 +61,31 @@ customer_churn_prediction/
     └── user_value_segmentation.png
 ```
 
-## 安装和设置
+## 快速开始
 
-### 1. 克隆项目
+### 🚀 方式1: 自动环境配置（推荐）
+```bash
+# 1. 克隆项目
+git clone https://github.com/your-username/customer_churn_prediction.git
+cd customer_churn_prediction
+
+# 2. 运行自动安装脚本
+python setup_oracle.py
+
+# 3. 根据提示配置Oracle环境，然后运行
+cd src
+python run_feature_engineering.py
+```
+
+### 🛠️ 方式2: 手动安装配置
+
+#### 1. 克隆项目
 ```bash
 git clone https://github.com/your-username/customer_churn_prediction.git
 cd customer_churn_prediction
 ```
 
-### 2. 创建虚拟环境
+#### 2. 创建虚拟环境
 ```bash
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
@@ -77,15 +93,21 @@ source venv/bin/activate  # Linux/Mac
 venv\Scripts\activate     # Windows
 ```
 
-### 3. 安装依赖
+#### 3. 安装依赖
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. 数据库配置
-- 配置Oracle数据库连接
+#### 4. Oracle环境配置（可选）
+如需使用Oracle数据库：
+- 下载并安装 [Oracle Instant Client](https://www.oracle.com/database/technologies/instant-client/downloads.html)
+- 解压到 `C:\oracle\instantclient_21_18` (Windows) 或 `/usr/local/oracle/instantclient_21_18` (Linux/macOS)
+- 配置环境变量PATH
+
+#### 5. 数据库配置（可选）
+- 修改 `src/oracle_data_extractor.py` 中的数据库连接信息
 - 确保有相关表的访问权限
-- 参考 `SQL_Data_Export_Guide.md` 进行数据导出
+- 参考 `docs/SQL_Data_Export_Guide.md` 进行数据导出
 
 ## 使用方法
 
